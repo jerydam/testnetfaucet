@@ -42,16 +42,16 @@ export interface Network {
 // =============================================
 export const networks: Network[] = [
   {
-    name: "Celo Alfajores",
+    name: "Celo Sepolia",
     symbol: "CELO",
-    chainId: 44787,
+    chainId: 11142220,
     rpcUrl: [
-      "https://alfajores-forno.celo-testnet.org",
-      "https://celo-alfajores.drpc.org",
-      "https://rpc.ankr.com/celo_alfajores",
+      "https://sepolia.celo.org",
+      "https://celo-sepolia.g.alchemy.com/v2/sXHCrL5-xwYkPtkRC_WTEZHvIkOVTbw-",
+      "https://celo-sepolia.infura.io/v3/e9fa8c3350054dafa40019a5b604679f",
     ],
-    blockExplorerUrls: "https://alfajores.celoscan.io",
-    explorerUrl: "https://alfajores.celoscan.io",
+    blockExplorerUrls: "https://sepolia.celoscan.io",
+    explorerUrl: "https://sepolia.celoscan.io",
     color: "#35D07F",
     logoUrl: "/celo.png",
     iconUrl: "/celo.png",
