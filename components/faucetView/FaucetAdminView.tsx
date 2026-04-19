@@ -275,13 +275,13 @@ const FaucetAdminView: React.FC<FaucetAdminViewProps> = ({
     faucetDetails?.claimAmount ? formatUnits(faucetDetails.claimAmount, tokenDecimals) : "0"
   );
   useEffect(() => {
-  const timer = setInterval(() => {
-    setCurrentTime(Date.now());
-  }, 1000);
+    const timer = setInterval(() => {
+      setCurrentTime(Date.now());
+    }, 1000);
 
-  // Always clean up your intervals!
-  return () => clearInterval(timer);
-}, []);
+    // Always clean up your intervals!
+    return () => clearInterval(timer);
+  }, []);
   const [startTime, setStartTime] = useState(
     faucetDetails?.startTime
       ? new Date(Number(faucetDetails.startTime) * 1000).toISOString().slice(0, 16)
@@ -356,74 +356,74 @@ const FaucetAdminView: React.FC<FaucetAdminViewProps> = ({
     validateStartTime(e.target.value);
   };
 
-const loadTransactionHistory = useCallback(async () => {
-  if (!selectedNetwork || !faucetAddress) return;
-  setIsHistoryLoading(true);
-  console.group("🔍 loadTransactionHistory DEBUG");
-  console.log("faucetAddress:", faucetAddress);
-  console.log("selectedNetwork:", selectedNetwork);
-  console.log("faucetType:", faucetType);
-  
-  try {
-    const { JsonRpcProvider } = await import("ethers");
-    
-    const safeRpc = Array.isArray(selectedNetwork.rpcUrl)
-      ? selectedNetwork.rpcUrl[0]
-      : selectedNetwork.rpcUrl;
-    
-    console.log("safeRpc:", safeRpc);
-    
-    const rpcProvider = new JsonRpcProvider(safeRpc);
-    
-    // Test the provider first
-    try {
-      const network = await rpcProvider.getNetwork();
-      console.log("✅ RPC connected - chainId:", network.chainId.toString());
-    } catch (rpcErr) {
-      console.error("❌ RPC connection failed:", rpcErr);
-    }
+  const loadTransactionHistory = useCallback(async () => {
+    if (!selectedNetwork || !faucetAddress) return;
+    setIsHistoryLoading(true);
+    console.group("🔍 loadTransactionHistory DEBUG");
+    console.log("faucetAddress:", faucetAddress);
+    console.log("selectedNetwork:", selectedNetwork);
+    console.log("faucetType:", faucetType);
 
-    // Test if the faucet contract exists at that address
     try {
-      const code = await rpcProvider.getCode(faucetAddress);
-      console.log("Contract bytecode length:", code.length, code === "0x" ? "❌ NO CONTRACT at this address!" : "✅ Contract exists");
-    } catch (codeErr) {
-      console.error("❌ getCode failed:", codeErr);
-    }
+      const { JsonRpcProvider } = await import("ethers");
 
-    console.log("Calling getFaucetTransactionHistory...");
-    
-    const txs = await getFaucetTransactionHistory(
-  rpcProvider as any,
-  faucetAddress,
-  selectedNetwork,
-  faucetType || undefined,
-  address ?? undefined 
-);
-    
-    console.log("✅ Raw txs returned:", txs);
-    console.log("txs count:", txs?.length);
-    console.log("First tx sample:", txs?.[0]);
-    
-    const sorted = txs.sort((a, b) => b.timestamp - a.timestamp);
-    setTransactions(sorted);
-    
-  } catch (error: any) {
-    console.error("❌ Full error object:", error);
-    console.error("error.message:", error.message);
-    console.error("error.code:", error.code);
-    console.error("error.data:", error.data);
-    console.error("error.stack:", error.stack);
-    toast.error(`Failed to load Activity Log: ${error.message}`);
-  } finally {
-    setIsHistoryLoading(false);
-    console.groupEnd();
-  }
-}, [faucetAddress, selectedNetwork, faucetType, setTransactions, address]);
-useEffect(() => {
-  if (activeTab === "history" && selectedNetwork) loadTransactionHistory();
-}, [activeTab, selectedNetwork, loadTransactionHistory]);
-  
+      const safeRpc = Array.isArray(selectedNetwork.rpcUrl)
+        ? selectedNetwork.rpcUrl[0]
+        : selectedNetwork.rpcUrl;
+
+      console.log("safeRpc:", safeRpc);
+
+      const rpcProvider = new JsonRpcProvider(safeRpc);
+
+      // Test the provider first
+      try {
+        const network = await rpcProvider.getNetwork();
+        console.log("✅ RPC connected - chainId:", network.chainId.toString());
+      } catch (rpcErr) {
+        console.error("❌ RPC connection failed:", rpcErr);
+      }
+
+      // Test if the faucet contract exists at that address
+      try {
+        const code = await rpcProvider.getCode(faucetAddress);
+        console.log("Contract bytecode length:", code.length, code === "0x" ? "❌ NO CONTRACT at this address!" : "✅ Contract exists");
+      } catch (codeErr) {
+        console.error("❌ getCode failed:", codeErr);
+      }
+
+      console.log("Calling getFaucetTransactionHistory...");
+
+      const txs = await getFaucetTransactionHistory(
+        rpcProvider as any,
+        faucetAddress,
+        selectedNetwork,
+        faucetType || undefined,
+        address ?? undefined
+      );
+
+      console.log("✅ Raw txs returned:", txs);
+      console.log("txs count:", txs?.length);
+      console.log("First tx sample:", txs?.[0]);
+
+      const sorted = txs.sort((a, b) => b.timestamp - a.timestamp);
+      setTransactions(sorted);
+
+    } catch (error: any) {
+      console.error("❌ Full error object:", error);
+      console.error("error.message:", error.message);
+      console.error("error.code:", error.code);
+      console.error("error.data:", error.data);
+      console.error("error.stack:", error.stack);
+      toast.error(`Failed to load Activity Log: ${error.message}`);
+    } finally {
+      setIsHistoryLoading(false);
+      console.groupEnd();
+    }
+  }, [faucetAddress, selectedNetwork, faucetType, setTransactions, address]);
+  useEffect(() => {
+    if (activeTab === "history" && selectedNetwork) loadTransactionHistory();
+  }, [activeTab, selectedNetwork, loadTransactionHistory]);
+
 
   useEffect(() => {
     if (faucetDetails) {
@@ -501,7 +501,7 @@ useEffect(() => {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ faucetAddress, userAddress: address, chainId: Number(chainId) }),
         });
-      } catch {}
+      } catch { }
       toast.success("Faucet deleted successfully");
       setShowDeleteDialog(false);
       router.push("/");
@@ -520,8 +520,14 @@ useEffect(() => {
     try {
       setIsFunding(true);
       const amount = parseUnits(adjustedFundAmount, tokenDecimals);
+      // If token is ZeroAddress, it's a native token faucet regardless of isEther flag
+      const { ZeroAddress } = await import("ethers");
+      const effectiveIsEther =
+        faucetDetails.isEther ||
+        !faucetDetails.token ||
+        faucetDetails.token === ZeroAddress;
       await fundFaucet(
-        provider as BrowserProvider, faucetAddress, amount, faucetDetails.isEther,
+        provider as BrowserProvider, faucetAddress, amount, effectiveIsEther,
         BigInt(chainId), BigInt(Number(selectedNetwork.chainId)), faucetType || undefined
       );
       toast.success("Faucet funded successfully");
@@ -534,27 +540,27 @@ useEffect(() => {
   };
 
   const getTxExplorerUrl = (txHash: string) => {
-  const explorer = selectedNetwork?.blockExplorerUrl || selectedNetwork?.explorer;
-  if (!explorer || !txHash) return null;
-  return `${explorer.replace(/\/$/, "")}/tx/${txHash}`;
-};
+    const explorer = selectedNetwork?.blockExplorerUrl || selectedNetwork?.explorer;
+    if (!explorer || !txHash) return null;
+    return `${explorer.replace(/\/$/, "")}/tx/${txHash}`;
+  };
 
-const getEventBadgeVariant = (type: string): "default" | "secondary" | "destructive" | "outline" => {
-  const t = type?.toLowerCase();
-  if (t === "claim" || t === "drip") return "default";
-  if (t === "fund" || t === "deposit") return "secondary";
-  if (t === "withdraw") return "destructive";
-  return "outline";
-};
+  const getEventBadgeVariant = (type: string): "default" | "secondary" | "destructive" | "outline" => {
+    const t = type?.toLowerCase();
+    if (t === "claim" || t === "drip") return "default";
+    if (t === "fund" || t === "deposit") return "secondary";
+    if (t === "withdraw") return "destructive";
+    return "outline";
+  };
 
-const getEventColor = (type: string) => {
-  const t = type?.toLowerCase();
-  if (t === "claim" || t === "drip") return "text-green-600 dark:text-green-400";
-  if (t === "fund" || t === "deposit") return "text-blue-600 dark:text-blue-400";
-  if (t === "withdraw") return "text-red-500 dark:text-red-400";
-  if (t === "reset") return "text-amber-500";
-  return "text-muted-foreground";
-};
+  const getEventColor = (type: string) => {
+    const t = type?.toLowerCase();
+    if (t === "claim" || t === "drip") return "text-green-600 dark:text-green-400";
+    if (t === "fund" || t === "deposit") return "text-blue-600 dark:text-blue-400";
+    if (t === "withdraw") return "text-red-500 dark:text-red-400";
+    if (t === "reset") return "text-amber-500";
+    return "text-muted-foreground";
+  };
 
   const handleWithdraw = async () => {
     if (!address || !provider || !withdrawAmount || !chainId || !checkNetwork()) return;
@@ -585,175 +591,175 @@ const getEventColor = (type: string) => {
   const isOverLimit = charCount > 280;
 
   const handleUpdateClaimParameters = async () => {
-  if (!address || !provider || !chainId || !checkNetwork()) return;
+    if (!address || !provider || !chainId || !checkNetwork()) return;
 
-  const hasTaskChanges = newSocialLinks.length > 0;
-  const isTemplateChanged = customXPostTemplate !== faucetDetails.customXPostTemplate;
-  const currentClaimAmountStr =
-    faucetType !== "custom"
-      ? formatUnits(faucetDetails.claimAmount, tokenDecimals)
-      : "0";
-  const currentStartTimeStr = faucetDetails.startTime
-    ? new Date(Number(faucetDetails.startTime) * 1000).toISOString().slice(0, 16)
-    : "";
-  const currentEndTimeStr = faucetDetails.endTime
-    ? new Date(Number(faucetDetails.endTime) * 1000).toISOString().slice(0, 16)
-    : "";
-  const hasBlockchainChanges =
-    (faucetType !== "custom" && claimAmount !== currentClaimAmountStr) ||
-    startTime !== currentStartTimeStr ||
-    endTime !== currentEndTimeStr;
+    const hasTaskChanges = newSocialLinks.length > 0;
+    const isTemplateChanged = customXPostTemplate !== faucetDetails.customXPostTemplate;
+    const currentClaimAmountStr =
+      faucetType !== "custom"
+        ? formatUnits(faucetDetails.claimAmount, tokenDecimals)
+        : "0";
+    const currentStartTimeStr = faucetDetails.startTime
+      ? new Date(Number(faucetDetails.startTime) * 1000).toISOString().slice(0, 16)
+      : "";
+    const currentEndTimeStr = faucetDetails.endTime
+      ? new Date(Number(faucetDetails.endTime) * 1000).toISOString().slice(0, 16)
+      : "";
+    const hasBlockchainChanges =
+      (faucetType !== "custom" && claimAmount !== currentClaimAmountStr) ||
+      startTime !== currentStartTimeStr ||
+      endTime !== currentEndTimeStr;
 
-  if (!hasTaskChanges && !hasBlockchainChanges && !isTemplateChanged) {
-    toast.warning("No changes made");
-    return;
-  }
-
-  try {
-    setIsUpdatingParameters(true);
-    const results: string[] = [];
-
-    // 1. Save X post template independently
-    if (isTemplateChanged) {
-      const response = await fetch(
-        "https://identical-vivi-faucetdrops-41e9c56b.koyeb.app/faucet-x-template",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            faucetAddress,
-            template: customXPostTemplate,
-            userAddress: address,
-            chainId: Number(chainId),
-          }),
-        }
-      );
-      if (!response.ok) throw new Error("Failed to save X post template");
-      results.push("share post template");
+    if (!hasTaskChanges && !hasBlockchainChanges && !isTemplateChanged) {
+      toast.warning("No changes made");
+      return;
     }
 
-    // 2. Save social tasks independently
-    if (hasTaskChanges) {
-      const formattedTasks = newSocialLinks
-  .filter((link) => link.url.trim() && link.handle.trim())
-  .map((link) => ({
-    title: `${link.action.charAt(0).toUpperCase() + link.action.slice(1)} on ${link.platform}`,
-    description: `${link.action.charAt(0).toUpperCase() + link.action.slice(1)} ${link.handle} on ${link.platform}`,
-    platform: link.platform,
-    handle: link.handle,
-    url: link.url.trim(),
-    action: link.action,
-    required: true,
-  }));
+    try {
+      setIsUpdatingParameters(true);
+      const results: string[] = [];
 
-      if (formattedTasks.length > 0) {
-        const taskResponse = await fetch(
-          "https://identical-vivi-faucetdrops-41e9c56b.koyeb.app/add-faucet-tasks",
+      // 1. Save X post template independently
+      if (isTemplateChanged) {
+        const response = await fetch(
+          "https://identical-vivi-faucetdrops-41e9c56b.koyeb.app/faucet-x-template",
           {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
               faucetAddress,
-              tasks: formattedTasks,
+              template: customXPostTemplate,
               userAddress: address,
               chainId: Number(chainId),
             }),
           }
         );
-        if (!taskResponse.ok) throw new Error("Failed to save social tasks");
-        results.push("social tasks");
-      } else {
-        toast.warning(
-          "No valid tasks to save — make sure handle and URL are filled in."
-        );
+        if (!response.ok) throw new Error("Failed to save X post template");
+        results.push("share post template");
       }
-    }
 
-    // 3. Save blockchain parameters independently
-    if (hasBlockchainChanges) {
-      const claimAmountBN =
-        faucetType === "custom"
-          ? BigInt(0)
-          : parseUnits(claimAmount, tokenDecimals);
-      const startTimestamp = Math.floor(new Date(startTime).getTime() / 1000);
-      const endTimestamp = Math.floor(new Date(endTime).getTime() / 1000);
+      // 2. Save social tasks independently
+      if (hasTaskChanges) {
+        const formattedTasks = newSocialLinks
+          .filter((link) => link.url.trim() && link.handle.trim())
+          .map((link) => ({
+            title: `${link.action.charAt(0).toUpperCase() + link.action.slice(1)} on ${link.platform}`,
+            description: `${link.action.charAt(0).toUpperCase() + link.action.slice(1)} ${link.handle} on ${link.platform}`,
+            platform: link.platform,
+            handle: link.handle,
+            url: link.url.trim(),
+            action: link.action,
+            required: true,
+          }));
 
-      await setClaimParameters(
-        provider as BrowserProvider,
-        faucetAddress,
-        claimAmountBN,
-        startTimestamp,
-        endTimestamp,
-        BigInt(chainId),
-        BigInt(Number(selectedNetwork.chainId)),
-        faucetType || undefined
-      );
-
-      // Sync parameters to backend
-      await fetch(
-        "https://identical-vivi-faucetdrops-41e9c56b.koyeb.app/set-claim-parameters",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            faucetAddress,
-            claimAmount: claimAmountBN.toString(),
-            startTime: startTimestamp,
-            endTime: endTimestamp,
-            chainId: Number(chainId),
-          }),
-        }
-      );
-
-      results.push("drip parameters");
-
-      // Generate new drop code automatically for dropcode faucets
-      if (faucetType === "dropcode") {
-        try {
-          const codeResponse = await fetch(
-            "https://identical-vivi-faucetdrops-41e9c56b.koyeb.app/generate-new-drop-code",
+        if (formattedTasks.length > 0) {
+          const taskResponse = await fetch(
+            "https://identical-vivi-faucetdrops-41e9c56b.koyeb.app/add-faucet-tasks",
             {
               method: "POST",
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify({
                 faucetAddress,
+                tasks: formattedTasks,
                 userAddress: address,
                 chainId: Number(chainId),
               }),
             }
           );
-          if (codeResponse.ok) {
-            const result = await codeResponse.json();
-            setNewlyGeneratedCode(result.secretCode);
-            setShowNewCodeDialog(true);
-          } else {
+          if (!taskResponse.ok) throw new Error("Failed to save social tasks");
+          results.push("social tasks");
+        } else {
+          toast.warning(
+            "No valid tasks to save — make sure handle and URL are filled in."
+          );
+        }
+      }
+
+      // 3. Save blockchain parameters independently
+      if (hasBlockchainChanges) {
+        const claimAmountBN =
+          faucetType === "custom"
+            ? BigInt(0)
+            : parseUnits(claimAmount, tokenDecimals);
+        const startTimestamp = Math.floor(new Date(startTime).getTime() / 1000);
+        const endTimestamp = Math.floor(new Date(endTime).getTime() / 1000);
+
+        await setClaimParameters(
+          provider as BrowserProvider,
+          faucetAddress,
+          claimAmountBN,
+          startTimestamp,
+          endTimestamp,
+          BigInt(chainId),
+          BigInt(Number(selectedNetwork.chainId)),
+          faucetType || undefined
+        );
+
+        // Sync parameters to backend
+        await fetch(
+          "https://identical-vivi-faucetdrops-41e9c56b.koyeb.app/set-claim-parameters",
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              faucetAddress,
+              claimAmount: claimAmountBN.toString(),
+              startTime: startTimestamp,
+              endTime: endTimestamp,
+              chainId: Number(chainId),
+            }),
+          }
+        );
+
+        results.push("drip parameters");
+
+        // Generate new drop code automatically for dropcode faucets
+        if (faucetType === "dropcode") {
+          try {
+            const codeResponse = await fetch(
+              "https://identical-vivi-faucetdrops-41e9c56b.koyeb.app/generate-new-drop-code",
+              {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                  faucetAddress,
+                  userAddress: address,
+                  chainId: Number(chainId),
+                }),
+              }
+            );
+            if (codeResponse.ok) {
+              const result = await codeResponse.json();
+              setNewlyGeneratedCode(result.secretCode);
+              setShowNewCodeDialog(true);
+            } else {
+              toast.warning(
+                "Parameters saved, but failed to auto-generate a new drop code. Please generate one manually."
+              );
+            }
+          } catch {
             toast.warning(
               "Parameters saved, but failed to auto-generate a new drop code. Please generate one manually."
             );
           }
-        } catch {
-          toast.warning(
-            "Parameters saved, but failed to auto-generate a new drop code. Please generate one manually."
-          );
         }
       }
-    }
 
-    if (results.length > 0) {
-      toast.success(
-        `Successfully updated: ${results.join(", ")}.`
-      );
-    }
+      if (results.length > 0) {
+        toast.success(
+          `Successfully updated: ${results.join(", ")}.`
+        );
+      }
 
-    setNewSocialLinks([]);
-    // Always refresh so tasks, template, and params are all reflected in UI
-    await loadFaucetDetails();
-  } catch (error: any) {
-    toast.error(`Failed to save changes: ${error.message}`);
-  } finally {
-    setIsUpdatingParameters(false);
-  }
-};
+      setNewSocialLinks([]);
+      // Always refresh so tasks, template, and params are all reflected in UI
+      await loadFaucetDetails();
+    } catch (error: any) {
+      toast.error(`Failed to save changes: ${error.message}`);
+    } finally {
+      setIsUpdatingParameters(false);
+    }
+  };
 
   const handleUpdateWhitelist = async () => {
     if (!address || !provider || !whitelistAddresses.trim() || !chainId || !checkNetwork()) return;
@@ -902,30 +908,30 @@ const getEventColor = (type: string) => {
   };
 
   const renderCountdown = (timestamp: number, prefix: string, startTimeMs?: number): string => {
-  if (timestamp === 0) return "N/A";
-  
-  // NEW: If we are rendering the "End" time, and the faucet hasn't started yet, 
-  // show the fixed duration instead of a moving countdown.
-  if (prefix === "End" && startTimeMs && startTimeMs > currentTime) {
-      const duration = timestamp * 1000 - startTimeMs;
-      const d  = Math.floor(duration / 86400000);
-      const h = Math.floor((duration % 86400000) / 3600000);
-      const m  = Math.floor((duration % 3600000) / 60000);
-      return `${d}d ${h}h ${m}m (Duration)`; 
-  }
+    if (timestamp === 0) return "N/A";
 
-  // Normal countdown logic
-  const diff = timestamp * 1000 - currentTime; 
-  
-  if (diff <= 0) return prefix === "Start" ? "Active" : "Ended";
-  
-  const days  = Math.floor(diff / 86400000);
-  const hours = Math.floor((diff % 86400000) / 3600000);
-  const mins  = Math.floor((diff % 3600000) / 60000);
-  const secs  = Math.floor((diff % 60000) / 1000);
-  
-  return `${days}d ${hours}h ${mins}m ${secs}s`;
-};
+    // NEW: If we are rendering the "End" time, and the faucet hasn't started yet, 
+    // show the fixed duration instead of a moving countdown.
+    if (prefix === "End" && startTimeMs && startTimeMs > currentTime) {
+      const duration = timestamp * 1000 - startTimeMs;
+      const d = Math.floor(duration / 86400000);
+      const h = Math.floor((duration % 86400000) / 3600000);
+      const m = Math.floor((duration % 3600000) / 60000);
+      return `${d}d ${h}h ${m}m (Duration)`;
+    }
+
+    // Normal countdown logic
+    const diff = timestamp * 1000 - currentTime;
+
+    if (diff <= 0) return prefix === "Start" ? "Active" : "Ended";
+
+    const days = Math.floor(diff / 86400000);
+    const hours = Math.floor((diff % 86400000) / 3600000);
+    const mins = Math.floor((diff % 3600000) / 60000);
+    const secs = Math.floor((diff % 60000) / 1000);
+
+    return `${days}d ${hours}h ${mins}m ${secs}s`;
+  };
 
   const adminTabs = [
     { value: "fund", label: "Fund", icon: Upload },
@@ -1346,7 +1352,7 @@ const getEventColor = (type: string) => {
                     {charCount} / 280
                   </Badge>
                 </div>
-                
+
                 <Textarea
                   placeholder='e.g. Thanks for the tokens! {@handle} {#hashtag}'
                   value={customXPostTemplate}
@@ -1436,7 +1442,7 @@ const getEventColor = (type: string) => {
                       await loadTransactionHistory();
                     } catch { toast.error("Failed to set custom claim amounts."); }
                   }}
-                  onCancel={() => {}}
+                  onCancel={() => { }}
                 />
               </Section>
             </TabsContent>
@@ -1545,193 +1551,192 @@ const getEventColor = (type: string) => {
           </TabsContent>
 
           <TabsContent value="history" className="space-y-4 mt-5">
-  <Section icon={History} title="Onchain Activity Log">
-    <div className="space-y-3">
-      {/* Refresh button */}
-      <div className="flex items-center justify-between">
-        <p className="text-xs text-muted-foreground">
-          Live onchain events from the faucet contract.
-        </p>
-        <Button
-          variant="outline"
-          size="sm"
-          className="h-7 text-xs gap-1.5"
-          onClick={loadTransactionHistory}
-          disabled={isHistoryLoading}
-        >
-          {isHistoryLoading ? (
-            <Spinner /> // Or use the inline spinner classes below
-          ) : (
-            <RotateCcw className="h-3 w-3" />
-          )}
-          {isHistoryLoading ? "Refreshing..." : "Refresh"}
-        </Button>
-      </div>
+            <Section icon={History} title="Onchain Activity Log">
+              <div className="space-y-3">
+                {/* Refresh button */}
+                <div className="flex items-center justify-between">
+                  <p className="text-xs text-muted-foreground">
+                    Live onchain events from the faucet contract.
+                  </p>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="h-7 text-xs gap-1.5"
+                    onClick={loadTransactionHistory}
+                    disabled={isHistoryLoading}
+                  >
+                    {isHistoryLoading ? (
+                      <Spinner /> // Or use the inline spinner classes below
+                    ) : (
+                      <RotateCcw className="h-3 w-3" />
+                    )}
+                    {isHistoryLoading ? "Refreshing..." : "Refresh"}
+                  </Button>
+                </div>
 
-      {isHistoryLoading ? (
-        // LOADING STATE
-        <div className="text-center py-12">
-          <div className="inline-flex items-center justify-center h-14 w-14 rounded-full bg-muted/50 mb-3">
-            <div className="h-6 w-6 rounded-full border-2 border-primary border-t-transparent animate-spin" />
-          </div>
-          <p className="text-sm font-medium text-muted-foreground">Loading activity log...</p>
-          <p className="text-xs text-muted-foreground/60 mt-1">
-            Fetching the latest events directly from the blockchain
-          </p>
-        </div>
-      ) : transactions.length > 0 ? (
-        // TABLE STATE
-        <>
-          <div className="overflow-x-auto rounded-lg border border-border/60">
-            <Table>
-              <TableHeader>
-                <TableRow className="bg-muted/30 hover:bg-muted/30">
-                  <TableHead className="text-xs font-semibold w-[90px]">Event</TableHead>
-                  <TableHead className="text-xs font-semibold">Address</TableHead>
-                  <TableHead className="text-xs font-semibold text-right">Amount</TableHead>
-                  <TableHead className="text-xs font-semibold hidden sm:table-cell">Date</TableHead>
-                  <TableHead className="text-xs font-semibold text-right w-[60px]">Tx</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {currentTransactions.map((tx, index) => {
-                  const explorerUrl = getTxExplorerUrl(tx.txHash || tx.transactionHash);
-                  return (
-                    <TableRow
-                      key={`${tx.txHash || tx.transactionHash || tx.timestamp}-${index}`}
-                      className="hover:bg-muted/20 transition-colors"
-                    >
-                      <TableCell className="text-xs py-2.5">
-                        <Badge
-                          variant={getEventBadgeVariant(tx.transactionType)}
-                          className={`text-[10px] font-semibold capitalize px-2 ${
-                            tx.transactionType?.toLowerCase() === "claim" ||
-                            tx.transactionType?.toLowerCase() === "drip"
-                              ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 border-green-200 dark:border-green-800"
-                              : tx.transactionType?.toLowerCase() === "fund" ||
-                                tx.transactionType?.toLowerCase() === "deposit"
-                              ? "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 border-blue-200 dark:border-blue-800"
-                              : tx.transactionType?.toLowerCase() === "withdraw"
-                              ? "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400 border-red-200 dark:border-red-800"
-                              : ""
-                          }`}
-                        >
-                          {tx.transactionType || "Event"}
-                        </Badge>
-                      </TableCell>
-                      <TableCell className="text-xs font-mono text-muted-foreground py-2.5">
-                        <span
-                          className="cursor-pointer hover:text-foreground transition-colors"
-                          onClick={() => navigator.clipboard.writeText(tx.initiator).then(() => toast.success("Address copied"))}
-                          title={tx.initiator}
-                        >
-                          {tx.initiator.slice(0, 6)}…{tx.initiator.slice(-4)}
+                {isHistoryLoading ? (
+                  // LOADING STATE
+                  <div className="text-center py-12">
+                    <div className="inline-flex items-center justify-center h-14 w-14 rounded-full bg-muted/50 mb-3">
+                      <div className="h-6 w-6 rounded-full border-2 border-primary border-t-transparent animate-spin" />
+                    </div>
+                    <p className="text-sm font-medium text-muted-foreground">Loading activity log...</p>
+                    <p className="text-xs text-muted-foreground/60 mt-1">
+                      Fetching the latest events directly from the blockchain
+                    </p>
+                  </div>
+                ) : transactions.length > 0 ? (
+                  // TABLE STATE
+                  <>
+                    <div className="overflow-x-auto rounded-lg border border-border/60">
+                      <Table>
+                        <TableHeader>
+                          <TableRow className="bg-muted/30 hover:bg-muted/30">
+                            <TableHead className="text-xs font-semibold w-[90px]">Event</TableHead>
+                            <TableHead className="text-xs font-semibold">Address</TableHead>
+                            <TableHead className="text-xs font-semibold text-right">Amount</TableHead>
+                            <TableHead className="text-xs font-semibold hidden sm:table-cell">Date</TableHead>
+                            <TableHead className="text-xs font-semibold text-right w-[60px]">Tx</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {currentTransactions.map((tx, index) => {
+                            const explorerUrl = getTxExplorerUrl(tx.txHash || tx.transactionHash);
+                            return (
+                              <TableRow
+                                key={`${tx.txHash || tx.transactionHash || tx.timestamp}-${index}`}
+                                className="hover:bg-muted/20 transition-colors"
+                              >
+                                <TableCell className="text-xs py-2.5">
+                                  <Badge
+                                    variant={getEventBadgeVariant(tx.transactionType)}
+                                    className={`text-[10px] font-semibold capitalize px-2 ${tx.transactionType?.toLowerCase() === "claim" ||
+                                      tx.transactionType?.toLowerCase() === "drip"
+                                      ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 border-green-200 dark:border-green-800"
+                                      : tx.transactionType?.toLowerCase() === "fund" ||
+                                        tx.transactionType?.toLowerCase() === "deposit"
+                                        ? "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 border-blue-200 dark:border-blue-800"
+                                        : tx.transactionType?.toLowerCase() === "withdraw"
+                                          ? "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400 border-red-200 dark:border-red-800"
+                                          : ""
+                                      }`}
+                                  >
+                                    {tx.transactionType || "Event"}
+                                  </Badge>
+                                </TableCell>
+                                <TableCell className="text-xs font-mono text-muted-foreground py-2.5">
+                                  <span
+                                    className="cursor-pointer hover:text-foreground transition-colors"
+                                    onClick={() => navigator.clipboard.writeText(tx.initiator).then(() => toast.success("Address copied"))}
+                                    title={tx.initiator}
+                                  >
+                                    {tx.initiator.slice(0, 6)}…{tx.initiator.slice(-4)}
+                                  </span>
+                                </TableCell>
+                                <TableCell className="text-xs font-mono text-right py-2.5">
+                                  <span className={getEventColor(tx.transactionType)}>
+                                    {tx.transactionType?.toLowerCase() === "withdraw" ? "−" : "+"}
+                                    {formatUnits(tx.amount, tokenDecimals)}
+                                  </span>
+                                  <span className="text-muted-foreground ml-1">
+                                    {getTokenName(tx.isEther)}
+                                  </span>
+                                </TableCell>
+                                <TableCell className="text-xs text-muted-foreground hidden sm:table-cell py-2.5 whitespace-nowrap">
+                                  {new Date(tx.timestamp * 1000).toLocaleString(undefined, {
+                                    month: "short",
+                                    day: "numeric",
+                                    hour: "2-digit",
+                                    minute: "2-digit",
+                                  })}
+                                </TableCell>
+                                <TableCell className="text-right py-2.5">
+                                  {explorerUrl ? (
+                                    <a
+                                      href={explorerUrl}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      className="inline-flex items-center justify-center h-6 w-6 rounded hover:bg-muted text-muted-foreground hover:text-foreground transition-colors"
+                                      title="View on explorer"
+                                    >
+                                      <ExternalLink className="h-3 w-3" />
+                                    </a>
+                                  ) : (
+                                    <span className="text-muted-foreground/30 text-[10px]">—</span>
+                                  )}
+                                </TableCell>
+                              </TableRow>
+                            );
+                          })}
+                        </TableBody>
+                      </Table>
+                    </div>
+
+                    {/* Pagination */}
+                    {totalPages > 1 && (
+                      <div className="flex items-center justify-between pt-1">
+                        <span className="text-xs text-muted-foreground">
+                          Showing {startIndex + 1}–{Math.min(startIndex + 10, transactions.length)} of {transactions.length}
                         </span>
-                      </TableCell>
-                      <TableCell className="text-xs font-mono text-right py-2.5">
-                        <span className={getEventColor(tx.transactionType)}>
-                          {tx.transactionType?.toLowerCase() === "withdraw" ? "−" : "+"}
-                          {formatUnits(tx.amount, tokenDecimals)}
-                        </span>
-                        <span className="text-muted-foreground ml-1">
-                          {getTokenName(tx.isEther)}
-                        </span>
-                      </TableCell>
-                      <TableCell className="text-xs text-muted-foreground hidden sm:table-cell py-2.5 whitespace-nowrap">
-                        {new Date(tx.timestamp * 1000).toLocaleString(undefined, {
-                          month: "short",
-                          day: "numeric",
-                          hour: "2-digit",
-                          minute: "2-digit",
-                        })}
-                      </TableCell>
-                      <TableCell className="text-right py-2.5">
-                        {explorerUrl ? (
-                          <a
-                            href={explorerUrl}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="inline-flex items-center justify-center h-6 w-6 rounded hover:bg-muted text-muted-foreground hover:text-foreground transition-colors"
-                            title="View on explorer"
+                        <div className="flex gap-1">
+                          <Button
+                            variant="outline" size="sm"
+                            onClick={() => handlePageChange(currentPage - 1)}
+                            disabled={currentPage === 1}
+                            className="h-7 text-xs"
                           >
-                            <ExternalLink className="h-3 w-3" />
-                          </a>
-                        ) : (
-                          <span className="text-muted-foreground/30 text-[10px]">—</span>
-                        )}
-                      </TableCell>
-                    </TableRow>
-                  );
-                })}
-              </TableBody>
-            </Table>
-          </div>
-
-          {/* Pagination */}
-          {totalPages > 1 && (
-            <div className="flex items-center justify-between pt-1">
-              <span className="text-xs text-muted-foreground">
-                Showing {startIndex + 1}–{Math.min(startIndex + 10, transactions.length)} of {transactions.length}
-              </span>
-              <div className="flex gap-1">
-                <Button
-                  variant="outline" size="sm"
-                  onClick={() => handlePageChange(currentPage - 1)}
-                  disabled={currentPage === 1}
-                  className="h-7 text-xs"
-                >
-                  Prev
-                </Button>
-                {Array.from({ length: Math.min(totalPages, 5) }, (_, i) => {
-                  const page = totalPages <= 5 ? i + 1 : Math.max(1, currentPage - 2) + i;
-                  if (page > totalPages) return null;
-                  return (
+                            Prev
+                          </Button>
+                          {Array.from({ length: Math.min(totalPages, 5) }, (_, i) => {
+                            const page = totalPages <= 5 ? i + 1 : Math.max(1, currentPage - 2) + i;
+                            if (page > totalPages) return null;
+                            return (
+                              <Button
+                                key={page}
+                                variant={currentPage === page ? "default" : "outline"}
+                                size="sm"
+                                onClick={() => handlePageChange(page)}
+                                className="h-7 w-7 text-xs p-0"
+                              >
+                                {page}
+                              </Button>
+                            );
+                          })}
+                          <Button
+                            variant="outline" size="sm"
+                            onClick={() => handlePageChange(currentPage + 1)}
+                            disabled={currentPage === totalPages}
+                            className="h-7 text-xs"
+                          >
+                            Next
+                          </Button>
+                        </div>
+                      </div>
+                    )}
+                  </>
+                ) : (
+                  // EMPTY STATE
+                  <div className="text-center py-12">
+                    <div className="inline-flex items-center justify-center h-14 w-14 rounded-full bg-muted/50 mb-3">
+                      <Activity className="h-6 w-6 text-muted-foreground/50" />
+                    </div>
+                    <p className="text-sm font-medium text-muted-foreground">No onchain events found</p>
+                    <p className="text-xs text-muted-foreground/60 mt-1">
+                      Events will appear here once users interact with the faucet
+                    </p>
                     <Button
-                      key={page}
-                      variant={currentPage === page ? "default" : "outline"}
+                      variant="outline"
                       size="sm"
-                      onClick={() => handlePageChange(page)}
-                      className="h-7 w-7 text-xs p-0"
+                      className="mt-3 h-7 text-xs gap-1.5"
+                      onClick={loadTransactionHistory}
                     >
-                      {page}
+                      <RotateCcw className="h-3 w-3" /> Try Refreshing
                     </Button>
-                  );
-                })}
-                <Button
-                  variant="outline" size="sm"
-                  onClick={() => handlePageChange(currentPage + 1)}
-                  disabled={currentPage === totalPages}
-                  className="h-7 text-xs"
-                >
-                  Next
-                </Button>
+                  </div>
+                )}
               </div>
-            </div>
-          )}
-        </>
-      ) : (
-        // EMPTY STATE
-        <div className="text-center py-12">
-          <div className="inline-flex items-center justify-center h-14 w-14 rounded-full bg-muted/50 mb-3">
-            <Activity className="h-6 w-6 text-muted-foreground/50" />
-          </div>
-          <p className="text-sm font-medium text-muted-foreground">No onchain events found</p>
-          <p className="text-xs text-muted-foreground/60 mt-1">
-            Events will appear here once users interact with the faucet
-          </p>
-          <Button
-            variant="outline"
-            size="sm"
-            className="mt-3 h-7 text-xs gap-1.5"
-            onClick={loadTransactionHistory}
-          >
-            <RotateCcw className="h-3 w-3" /> Try Refreshing
-          </Button>
-        </div>
-      )}
-    </div>
-  </Section>
-</TabsContent>
+            </Section>
+          </TabsContent>
         </Tabs>
       </CardContent>
 
@@ -1781,11 +1786,11 @@ const getEventColor = (type: string) => {
               dynamicTasks={combinedPreviewTasks}
               allAccountsVerified={false}
               secretCode=""
-              setSecretCode={() => {}}
+              setSecretCode={() => { }}
               usernames={{}}
-              setUsernames={() => {}}
+              setUsernames={() => { }}
               verificationStates={{}}
-              setVerificationStates={() => {}}
+              setVerificationStates={() => { }}
               isVerifying={false}
               faucetMetadata={simulatedFaucetDetails.faucetMetadata}
               customXPostTemplate={customXPostTemplate}
@@ -1794,11 +1799,11 @@ const getEventColor = (type: string) => {
               generateXPostContent={(a) => `Preview: ${a} ${tokenSymbol}`}
               txHash={null}
               showFollowDialog={false}
-              setShowFollowDialog={() => {}}
+              setShowFollowDialog={() => { }}
               showVerificationDialog={false}
-              setShowVerificationDialog={() => {}}
+              setShowVerificationDialog={() => { }}
               showClaimPopup={false}
-              setShowClaimPopup={() => {}}
+              setShowClaimPopup={() => { }}
               handleVerifyAllTasks={() => Promise.resolve()}
             />
           </div>

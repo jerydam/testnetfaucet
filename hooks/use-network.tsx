@@ -46,7 +46,7 @@ export const networks: Network[] = [
     symbol: "CELO",
     chainId: 11142220,
     rpcUrl: [
-      "https://sepolia.celo.org",
+      "https://forno.celo-sepolia.celo-testnet.org",
       "https://celo-sepolia.g.alchemy.com/v2/sXHCrL5-xwYkPtkRC_WTEZHvIkOVTbw-",
       "https://celo-sepolia.infura.io/v3/e9fa8c3350054dafa40019a5b604679f",
     ],
@@ -58,12 +58,12 @@ export const networks: Network[] = [
     factoryAddresses: [],
     factories: {
       droplist: "",
-      dropcode: "",
+      dropcode: "0x69a12ecB86A9510c70CEB72d209A7d8b034ca5fE",
       custom: "",
       quest: "",
       quiz: "",
     },
-    tokenAddress: "0xF194afDf50B03e69Bd7D057c1Aa9e10c9954E4C9", // Celo testnet token
+    tokenAddress: ZeroAddress, // Celo testnet token
     nativeCurrency: { name: "Celo", symbol: "CELO", decimals: 18 },
     isTestnet: true,
   },
@@ -245,8 +245,8 @@ interface NetworkContextType {
 const NetworkContext = createContext<NetworkContextType>({
   network: null,
   networks: networks,
-  setNetwork: () => {},
-  switchNetwork: async () => {},
+  setNetwork: () => { },
+  switchNetwork: async () => { },
   getLatestFactoryAddress: () => null,
   getFactoryAddress: () => null,
   isSwitchingNetwork: false,
@@ -259,9 +259,9 @@ export function NetworkProvider({ children }: { children: ReactNode }) {
   const [network, setNetworkState] = useState<Network | null>(null)
   const [isSwitchingNetwork, setIsSwitchingNetwork] = useState(false)
   const [isConnecting, setIsConnecting] = useState(false)
-  
+
   const { chainId: rawChainId, address, switchChain } = useWallet()
-  
+
   // Parse chainId to number early (handle hex or decimal string)
   const parseChainId = (id: string | number | null | undefined): number | null => {
     if (!id) return null
@@ -276,9 +276,9 @@ export function NetworkProvider({ children }: { children: ReactNode }) {
       return isNaN(parsed) ? null : parsed
     }
   }
-  
+
   const currentChainId = parseChainId(rawChainId)
-  
+
   // Use ref to always have fresh values - update synchronously on every render
   const walletRef = useRef({ address, chainId: rawChainId, switchChain })
   walletRef.current = { address, chainId: rawChainId, switchChain }
@@ -314,7 +314,7 @@ export function NetworkProvider({ children }: { children: ReactNode }) {
   // FIXED: Dedicated effect for chainId updates (triggers network set/reset)
   useEffect(() => {
     console.log(`[NetworkProvider] chainId effect:`, { rawChainId, parsedChainId: currentChainId, hasAddress: !!address, isConnecting })
-    
+
     // If wallet is connected but no valid chainId yet, keep waiting
     if (currentChainId === null) {
       if (address) {
@@ -326,15 +326,15 @@ export function NetworkProvider({ children }: { children: ReactNode }) {
       setNetworkState(null)
       return
     }
-    
+
     setIsConnecting(false) // Clear connecting state
-    
+
     const currentNetwork = networks.find((n) => n.chainId === currentChainId)
-    
+
     if (currentNetwork) {
       console.log(`[NetworkProvider] ✅ Setting network: ${currentNetwork.name} (parsed chainId: ${currentChainId})`)
       setNetworkState(currentNetwork)
-      
+
       // Only show toast if this is a user-initiated change (not initial load)
       if (network && network.chainId !== currentChainId) {
         toast({
@@ -367,7 +367,7 @@ export function NetworkProvider({ children }: { children: ReactNode }) {
   const switchNetwork = useCallback(async (targetChainId: number) => {
     // Get fresh values from ref
     const { address: currentAddress, chainId: currentRawChainId, switchChain: currentSwitchChain } = walletRef.current
-    
+
     console.log(`[NetworkProvider: switchNetwork] Called with:`, {
       targetChainId,
       currentAddress,
@@ -376,7 +376,7 @@ export function NetworkProvider({ children }: { children: ReactNode }) {
       hasAddress: !!currentAddress,
       refValues: walletRef.current
     })
-    
+
     if (!currentAddress) {
       console.log(`[NetworkProvider: switchNetwork] ❌ No wallet connected`)
       toast({
@@ -402,7 +402,7 @@ export function NetworkProvider({ children }: { children: ReactNode }) {
       })
       return
     }
-    
+
     // Already on target network (compare parsed)
     const currentParsed = parseChainId(currentRawChainId)
     if (currentParsed === targetChainId) {
@@ -424,7 +424,7 @@ export function NetworkProvider({ children }: { children: ReactNode }) {
       })
     } catch (error: any) {
       console.error(`[NetworkProvider: switchNetwork] ❌ Error:`, error)
-      
+
       toast({
         title: "Network Switch Failed",
         description: error?.message || `Could not switch to ${targetNetwork.name}`,
@@ -485,13 +485,13 @@ export function isFactoryTypeAvailable(chainId: number, factoryType: 'dropcode' 
 export function getAvailableFactoryTypes(chainId: number): ('dropcode' | 'droplist' | 'custom' | 'quest' | 'quiz')[] {
   const network = getNetworkByChainId(chainId)
   if (!network) return []
-  
+
   const availableTypes: ('dropcode' | 'droplist' | 'custom' | 'quest' | 'quiz')[] = []
   if (network.factories.dropcode) availableTypes.push('dropcode')
   if (network.factories.droplist) availableTypes.push('droplist')
   if (network.factories.custom) availableTypes.push('custom')
   if (network.factories.quest) availableTypes.push('quest')
   if (network.factories.quiz) availableTypes.push('quiz') // ✅ Included quiz
-  
+
   return availableTypes
 }

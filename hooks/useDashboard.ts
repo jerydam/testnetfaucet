@@ -1,6 +1,7 @@
 'use client';
 import { useState, useEffect, useCallback } from 'react';
 import { createClient } from '@supabase/supabase-js';
+import { celoSepolia } from 'viem/chains';
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -55,6 +56,7 @@ const NETWORK_COLORS: Record<string, string> = {
   Arbitrum:  '#28A0F0',
   Base:      '#0052FF',
   BNB:       '#F3BA2F',
+  'Celo Sepolia': '#35D07F',
 };
 
 const NETWORK_CHAIN_IDS: Record<string, number> = {
@@ -63,6 +65,7 @@ const NETWORK_CHAIN_IDS: Record<string, number> = {
   Arbitrum:  42161,
   Base:      8453,
   BNB:       56,
+  'Celo Sepolia': 11142220,
 };
 
 async function fetchDashboardFromSupabase(): Promise<DashboardData> {

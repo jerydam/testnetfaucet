@@ -282,249 +282,129 @@ const FAUCET_TYPE_TO_FACTORY_TYPE_MAPPING: Record<FaucetType, FactoryType> = {
   [FAUCET_TYPES.CUSTOM]: 'custom',
 }
 
-const SUPPORTED_CHAIN_IDS = [42220, 1135, 42161, 8453] as const
+const SUPPORTED_CHAIN_IDS = [11142220, 4202, 421614, 84532, 97] as const
 
 export const NETWORK_TOKENS: Record<number, TokenConfiguration[]> = {
-  // Celo Mainnet (42220)
-  42220: [
+  // Celo Alfajores Testnet (11142220)
+  11142220: [
     {
-      address: "0x471EcE3750Da237f93B8E339c536989b8978a438",
+      address: zeroAddress,
       name: "Celo",
       symbol: "CELO",
       decimals: 18,
       isNative: true,
-      logoUrl: "/celo.jpeg", 
-      description: "Native Celo token for governance and staking",
+      logoUrl: "/celo.jpeg",
+      description: "Native Celo token on Alfajores testnet",
     },
     {
-      address: "0xE2702Bd97ee33c88c8f6f92DA3B733608aa76F71",
-      name: "Celo Nigerian Naira",
-      symbol: "cNGN",
-      decimals: 18,
-      logoUrl: "/cngn.png", 
-      description: "Naira-pegged stablecoin on Celo",
-    },
-    {
-      address: "0x8A567e2aE79CA692Bd748aB832081C45de4041eA",
-      name: "Celo Colombian Peso",
-      symbol: "cCOP",
-      decimals: 18,
-      logoUrl: "/ccop.png",
-      description: "colombian peso-pegged stablecoin on Celo",
-
-    },
-    {
-      address: "0x765DE816845861e75A25fCA122bb6898B8B1282a",
+      address: "0x874069Fa1Eb16D44d622F2e0Ca25eeA172369bC1",
       name: "Celo Dollar",
       symbol: "cUSD",
       decimals: 18,
-      logoUrl: "/cusd.png", 
-      description: "USD-pegged stablecoin on Celo",
+      logoUrl: "/cusd.png",
+      description: "USD-pegged stablecoin on Celo Alfajores",
     },
     {
-      address: "0x48065fbBE25f71C9282ddf5e1cD6D6A887483D5e",
-      name: "Tether",
-      symbol: "USDT",
-      decimals: 6,
-      logoUrl: "/usdt.jpg", 
-      description: "Tether USD stablecoin",
-    },
-    {
-      address: "0x639A647fbe20b6c8ac19E48E2de44ea792c62c5C",
-      name: "Celo Brazilian Real",
-      symbol: "cREAL",
-      decimals: 18,
-      logoUrl: "/creal.jpg", 
-      description: "Brazilian Real-pegged stablecoin on Celo",
-    },
-    {
-      address: "0x32A9FE697a32135BFd313a6Ac28792DaE4D9979d",
-      name: "Celo Kenyan Shilling",
-      symbol: "cKES",
-      decimals: 18,
-      logoUrl: "/ckes.jpg", 
-      description: "Kenyan Shilling-pegged stablecoin on Celo",
-    },
-    {
-      address: "0xcebA9300f2b948710d2653dD7B07f33A8B32118C",
-      name: "USD Coin",
-      symbol: "USDC",
-      decimals: 6,
-      logoUrl: "/usdc.jpg", 
-      description: "USD Coin stablecoin",
-    },
-    {
-      address: "0xD8763CBa276a3738E6DE85b4b3bF5FDed6D6cA73",
+      address: "0x10c892A6EC43a53E45D0B916B4b7D383B1b78C0F",
       name: "Celo Euro",
       symbol: "cEUR",
       decimals: 18,
-      logoUrl: "/ceur.png", 
-      description: "Euro-pegged stablecoin on Celo",
-    },
-    {
-      address: "0x4f604735c1cf31399c6e711d5962b2b3e0225ad3",
-      name: "Glo Dollar",
-      symbol: "USDGLO",
-      decimals: 18,
-      logoUrl: "/glo.jpg", 
-      description: "Philanthropic dollar that funds global poverty relief",
-    },
-    {
-      address: "0x62b8b11039fcfe5ab0c56e502b1c372a3d2a9c7a",
-      name: "GoodDollar",
-      symbol: "G$",
-      decimals: 18,
-      logoUrl: "/gd.jpg", 
-      description: "Universal basic income token",
+      logoUrl: "/ceur.png",
+      description: "Euro-pegged stablecoin on Celo Alfajores",
     },
   ],
 
-  // Lisk Mainnet (1135)
-  1135: [
+  // Lisk Sepolia Testnet (4202)
+  4202: [
     {
       address: zeroAddress,
       name: "Ethereum",
       symbol: "ETH",
       decimals: 18,
       isNative: true,
-      logoUrl: "/ether.jpeg", 
-      description: "Native Ethereum for transaction fees",
+      logoUrl: "/ether.jpeg",
+      description: "Native Ethereum for transaction fees on Lisk Sepolia",
     },
     {
-      address: "0xac485391EB2d7D88253a7F1eF18C37f4242D1A24",
+      address: "0x8a21FF12D0a4229B8E3B3d96d2D0c9f5Bc3a4b49",
       name: "Lisk",
       symbol: "LSK",
       decimals: 18,
-      logoUrl: "/lsk.png", 
-      description: "Lisk native token",
-    },
-    {
-      address: "0x05D032ac25d322df992303dCa074EE7392C117b9",
-      name: "Tether USD",
-      symbol: "USDT",
-      decimals: 6,
-      logoUrl: "/usdt.jpg", 
-      description: "Tether USD stablecoin",
-    },
-    {
-      address: "0xF242275d3a6527d877f2c927a82D9b057609cc71",
-      name: "Bridged USDC",
-      symbol: "USDC.e",
-      decimals: 6,
-      logoUrl: "/usdc.jpg", 
-      description: "Bridged USD Coin from Ethereum",
+      logoUrl: "/lsk.png",
+      description: "Lisk token on Sepolia testnet",
     },
   ],
 
-  // Arbitrum One (42161)
-  42161: [
+  // Arbitrum Sepolia Testnet (421614)
+  421614: [
     {
       address: zeroAddress,
       name: "Ethereum",
       symbol: "ETH",
       decimals: 18,
       isNative: true,
-      logoUrl: "/ether.jpeg", 
-      description: "Native Ethereum for transaction fees",
+      logoUrl: "/ether.jpeg",
+      description: "Native Ethereum for transaction fees on Arbitrum Sepolia",
     },
     {
-      address: "0xaf88d065e77c8cC2239327C5EDb3A432268e5831",
+      address: "0x75faf114eafb1BDbe2F0316DF893fd58CE46AA4d",
       name: "USD Coin",
       symbol: "USDC",
       decimals: 6,
-      logoUrl: "/usdc.jpg", 
-      description: "Native USD Coin on Arbitrum",
-    },
-    {
-      address: "0xFd086bC7CD5C481DCC9C85ebE478A1C0b69FCbb9",
-      name: "Tether USD",
-      symbol: "USDT",
-      decimals: 6,
-      logoUrl: "/usdt.jpg", 
-      description: "Tether USD stablecoin",
-    },
-    {
-      address: "0x912CE59144191C1204E64559FE8253a0e49E6548",
-      name: "Arbitrum",
-      symbol: "ARB",
-      decimals: 18,
-      logoUrl: "/arb.jpeg", 
-      description: "Arbitrum governance token",
+      logoUrl: "/usdc.jpg",
+      description: "USD Coin on Arbitrum Sepolia testnet",
     },
   ],
 
-  // Base Mainnet (8453)
-  8453: [
+  // Base Sepolia Testnet (84532)
+  84532: [
     {
       address: zeroAddress,
       name: "Ethereum",
       symbol: "ETH",
       decimals: 18,
       isNative: true,
-      logoUrl: "/ether.jpeg", 
-      description: "Native Ethereum for transaction fees",
+      logoUrl: "/ether.jpeg",
+      description: "Native Ethereum for transaction fees on Base Sepolia",
     },
     {
-      address: "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+      address: "0x036CbD53842c5426634e7929541eC2318f3dCF7e",
       name: "USD Coin",
       symbol: "USDC",
       decimals: 6,
-      logoUrl: "/usdc.jpg", 
-      description: "Native USD Coin on Base",
-    },
-    {
-      address: "0xfde4C96c8593536E31F229EA8f37b2ADa2699bb2",
-      name: "Bridged Tether USD",
-      symbol: "USDT",
-      decimals: 6,
-      logoUrl: "/usdt.jpg", 
-      description: "Bridged Tether USD from Ethereum",
-    },
-    {
-      address: "0x4ed4E862860beD51a9570b96d89aF5E1B0Efefed",
-      name: "Degen",
-      symbol: "DEGEN",
-      decimals: 18,
-      logoUrl: "/degen.png", 
-      description: "Degen community token",
+      logoUrl: "/usdc.jpg",
+      description: "USD Coin on Base Sepolia testnet",
     },
   ],
-  
-  56:[
+
+  // BNB Testnet / Chapel (97)
+  97: [
     {
       address: zeroAddress,
       name: "BNB",
       symbol: "BNB",
       decimals: 18,
       isNative: true,
-      logoUrl: "/bnb.jpg", 
-      description: "Native BNB for transaction fees",
+      logoUrl: "/bnb.jpg",
+      description: "Native BNB for transaction fees on BNB Testnet",
     },
     {
-      address: "0x8AC76a51cc950d9822D68b83fE1Ad97B32Cd580d",
+      address: "0x64544969ed7EBf5f083679233325356EbE738930",
       name: "USD Coin",
       symbol: "USDC",
-      decimals: 18, // USDC on BSC is usually 18 decimals (Bridged)
-      logoUrl: "/busdc.jpg", 
-      description: "Binance-Peg USD Coin",
+      decimals: 18,
+      logoUrl: "/busdc.jpg",
+      description: "Binance-Peg USD Coin on BNB Testnet",
     },
     {
-      address: "0x55d398326f99059fF775485246999027B3197955",
+      address: "0x337610d27c682E347C9cD60BD4b3b107C9d34dDd",
       name: "Tether USD",
       symbol: "USDT",
       decimals: 18,
-      logoUrl: "/busd.jpg", 
-      description: "Binance-Peg BSC-USD",
+      logoUrl: "/busd.jpg",
+      description: "Tether USD on BNB Testnet",
     },
-    {
-      address: "0xe9e7CEA3DedcA5984780Bafc599bD69ADd087D56",
-      name: "BUSD",
-      symbol: "BUSD",
-      decimals: 18,
-      logoUrl: "/busdt.jpg", 
-      description: "Binance-Peg BUSD Token",
-    },
-]
+  ],
 }
 
 const FAUCET_USE_CASE_TEMPLATES: Record<FaucetType, Array<{
