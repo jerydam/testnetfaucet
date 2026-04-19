@@ -285,7 +285,7 @@ const FAUCET_TYPE_TO_FACTORY_TYPE_MAPPING: Record<FaucetType, FactoryType> = {
 const SUPPORTED_CHAIN_IDS = [11142220, 4202, 421614, 84532, 97] as const
 
 export const NETWORK_TOKENS: Record<number, TokenConfiguration[]> = {
-  // Celo Alfajores Testnet (11142220)
+  // Celo Sepolia Testnet (11142220)
   11142220: [
     {
       address: zeroAddress,
@@ -294,7 +294,7 @@ export const NETWORK_TOKENS: Record<number, TokenConfiguration[]> = {
       decimals: 18,
       isNative: true,
       logoUrl: "/celo.jpeg",
-      description: "Native Celo token on Alfajores testnet",
+      description: "Native Celo token on Sepolia testnet",
     },
     {
       address: "0x874069Fa1Eb16D44d622F2e0Ca25eeA172369bC1",
@@ -302,15 +302,15 @@ export const NETWORK_TOKENS: Record<number, TokenConfiguration[]> = {
       symbol: "cUSD",
       decimals: 18,
       logoUrl: "/cusd.png",
-      description: "USD-pegged stablecoin on Celo Alfajores",
+      description: "USD-pegged stablecoin on Celo Sepolia",
     },
     {
-      address: "0x10c892A6EC43a53E45D0B916B4b7D383B1b78C0F",
-      name: "Celo Euro",
-      symbol: "cEUR",
-      decimals: 18,
-      logoUrl: "/ceur.png",
-      description: "Euro-pegged stablecoin on Celo Alfajores",
+      address: "0xd077A400968890Eacc75cdc901F0356c943e4fDb",
+      name: "Tether USD",
+      symbol: "USDT",
+      decimals: 6,
+      logoUrl: "/usdt.png",
+      description: "USD-pegged stablecoin on Celo Sepolia",
     },
   ],
 

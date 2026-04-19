@@ -2493,141 +2493,170 @@ export async function fundFaucet(
     console.error(`[fundFaucet] ERROR: Network mismatch. Current chainId: ${chainId}, Expected: ${networkId}`);
     throw new Error("Switch to the network to perform operation");
   }
-  
+
   if (amount <= 0n) {
-    console.error(`[fundFaucet] ERROR: Invalid amount detected (${amount.toString()}). Must be > 0.`);
+    console.error(`[fundFaucet] ERROR: Invalid amount (${amount.toString()}). Must be > 0.`);
     throw new Error("Funding amount must be greater than zero.");
   }
 
   try {
-    console.log(`[fundFaucet] STEP 1: Fetching signer details...`);
+    // ── Step 1: Signer ────────────────────────────────────────────────
+    console.log(`[fundFaucet] STEP 1: Fetching signer...`);
     const signer = await provider.getSigner();
     const signerAddress = await signer.getAddress();
-    console.log(`[fundFaucet] STEP 1 COMPLETE: Signer address is ${signerAddress}`);
+    console.log(`[fundFaucet] STEP 1 COMPLETE: ${signerAddress}`);
 
-    console.log(`[fundFaucet] STEP 2: Determining faucet type and contract ABI...`);
+    // ── Step 2: Contract ──────────────────────────────────────────────
+    console.log(`[fundFaucet] STEP 2: Determining faucet type and ABI...`);
     const detectedFaucetType = faucetType || (await detectFaucetType(provider, faucetAddress));
     const config = getFaucetConfig(detectedFaucetType);
     const faucetContract = new Contract(faucetAddress, config.abi, signer);
-    console.log(`[fundFaucet] STEP 2 COMPLETE: Faucet type is '${detectedFaucetType}'`);
+    console.log(`[fundFaucet] STEP 2 COMPLETE: type='${detectedFaucetType}'`);
 
-    console.log(`[fundFaucet] STEP 3: Resolving token address...`);
-    let tokenAddress = isEther 
-        ? ZeroAddress 
-        : await faucetContract.token().catch((err) => {
-            console.warn(`[fundFaucet] WARNING: Failed to fetch token address from contract, defaulting to ZeroAddress.`, err);
-            return ZeroAddress;
-          });
-    console.log(`[fundFaucet] STEP 3 COMPLETE: Target token address is ${tokenAddress}`);
+    // ── Step 3: Resolve token — always read from contract, ignore isEther ──
+    // isEther is unreliable (CELO is native but not ETH). Source of truth is
+    // the contract's token() return value.
+    console.log(`[fundFaucet] STEP 3: Resolving token address from contract...`);
+    const tokenAddress: string = await faucetContract.token().catch((err: any) => {
+      console.warn(`[fundFaucet] WARNING: token() call failed, defaulting to ZeroAddress.`, err);
+      return ZeroAddress;
+    });
+    const treatAsNative = tokenAddress === ZeroAddress;
+    console.log(`[fundFaucet] STEP 3 COMPLETE: token=${tokenAddress}, treatAsNative=${treatAsNative}`);
 
-    let treatAsNative = isEther || tokenAddress === ZeroAddress;
-    console.log(`[fundFaucet] STEP 4: Checking if token should be treated as native. Initial assessment: ${treatAsNative}`);
-
+    // ── Step 4: Validate ERC-20 contract exists on this chain ────────
     if (!treatAsNative) {
-      console.log(`[fundFaucet] STEP 4a: Verifying ERC-20 token contract code at ${tokenAddress}...`);
+      console.log(`[fundFaucet] STEP 4: Verifying ERC-20 contract code at ${tokenAddress}...`);
       const code = await provider.getCode(tokenAddress);
       if (code === "0x") {
-        console.error(`[fundFaucet] ERROR: Token address ${tokenAddress} has no code on this network.`);
-        throw new Error(`The token contract ${tokenAddress} does not exist on this network. Are you connected to the right network?`);
-      } else {
-        console.log(`[fundFaucet] STEP 4a COMPLETE: Valid contract found at token address.`);
+        throw new Error(
+          `Token contract ${tokenAddress} does not exist on this network. Are you on the right network?`
+        );
       }
+      console.log(`[fundFaucet] STEP 4 COMPLETE: Valid ERC-20 contract found.`);
     }
-    
-    console.log(`[fundFaucet] STEP 5: Setting up gas parameter fetcher...`);
-    const getGasParams = async () => {
-      console.log(`[fundFaucet] Fetching fee data from provider...`);
-      const feeData = await provider.getFeeData();
-      if (feeData.maxFeePerGas && feeData.maxPriorityFeePerGas) {
-        console.log(`[fundFaucet] Using EIP-1559 gas params.`);
-        return { maxFeePerGas: feeData.maxFeePerGas, maxPriorityFeePerGas: feeData.maxPriorityFeePerGas };
-      } else if (feeData.gasPrice) {
-        console.log(`[fundFaucet] Using legacy gas price.`);
-        return { gasPrice: feeData.gasPrice };
+
+    // ── Step 5: Gas params — gracefully handle chains without EIP-1559 ──
+    console.log(`[fundFaucet] STEP 5: Fetching gas params...`);
+    const getGasParams = async (): Promise<Record<string, bigint>> => {
+      try {
+        const feeData = await provider.getFeeData();
+        if (feeData.maxFeePerGas && feeData.maxPriorityFeePerGas) {
+          console.log(`[fundFaucet] Using EIP-1559 gas params.`);
+          return {
+            maxFeePerGas: feeData.maxFeePerGas,
+            maxPriorityFeePerGas: feeData.maxPriorityFeePerGas,
+          };
+        }
+        if (feeData.gasPrice) {
+          console.log(`[fundFaucet] Using legacy gasPrice.`);
+          return { gasPrice: feeData.gasPrice };
+        }
+      } catch (err) {
+        console.warn(`[fundFaucet] getFeeData() failed, using empty gas params.`, err);
       }
+      console.log(`[fundFaucet] No gas params resolved, using provider defaults.`);
       return {};
     };
 
-    // ── Determine the actual ETH/CELO value to attach to the transaction ──
-    const txValue = treatAsNative ? amount : 0n;
-
-    // ── Handle ERC-20 Approvals (Skip if Native) ──────────────────────
+    // ── Step 6: ERC-20 approval (skip for native) ─────────────────────
     if (!treatAsNative) {
-      console.log(`[fundFaucet] PATH CHOSEN: ERC-20 Token. Checking allowances...`);
+      console.log(`[fundFaucet] STEP 6: ERC-20 path — checking allowance...`);
       const tokenContract = new Contract(tokenAddress, ERC20_ABI, signer);
 
-      let currentAllowance = BigInt(0);
+      let currentAllowance = 0n;
       try {
         currentAllowance = await tokenContract.allowance(signerAddress, faucetAddress);
-      } catch (err: any) {
-        console.warn(`[fundFaucet] WARNING: Allowance call failed. Proceeding with allowance = 0.`, err);
+        console.log(`[fundFaucet] Current allowance: ${currentAllowance.toString()}`);
+      } catch (err) {
+        console.warn(`[fundFaucet] allowance() call failed, assuming 0.`, err);
       }
 
       if (currentAllowance < amount) {
-        console.log(`[fundFaucet] Allowance insufficient. Approving...`);
         if (currentAllowance > 0n) {
+          console.log(`[fundFaucet] Resetting existing allowance to 0...`);
           const resetTx = await signer.sendTransaction({
             to: tokenAddress,
             data: tokenContract.interface.encodeFunctionData("approve", [faucetAddress, 0n]),
           });
           await resetTx.wait();
+          console.log(`[fundFaucet] Allowance reset confirmed.`);
         }
 
+        console.log(`[fundFaucet] Approving ${amount.toString()} for faucet...`);
         const approveTx = await signer.sendTransaction({
           to: tokenAddress,
           data: tokenContract.interface.encodeFunctionData("approve", [faucetAddress, amount]),
         });
         await approveTx.wait();
-        console.log(`[fundFaucet] Approval confirmed.`);
+        console.log(`[fundFaucet] Approval confirmed: ${approveTx.hash}`);
         await reportTransactionToDivvi(approveTx.hash as `0x${string}`, Number(chainId));
       } else {
-        console.log(`[fundFaucet] Allowance is sufficient. Skipping approval.`);
+        console.log(`[fundFaucet] Allowance sufficient, skipping approval.`);
       }
     } else {
-      console.log(`[fundFaucet] PATH CHOSEN: Native Token. Skipping ERC-20 approval step.`);
+      console.log(`[fundFaucet] STEP 6: Native token path — skipping ERC-20 approval.`);
     }
 
-    // ── Unified Funding Path ──────────────────────────────────────────
-    console.log(`[fundFaucet] Encoding 'fund' function call...`);
+    // ── Step 7: Build and send the fund() call ────────────────────────
+    // For native tokens (CELO, ETH, etc.): fund(amount) + value = amount
+    // For ERC-20 tokens:                   fund(amount) + value = 0
+    // The contract uses msg.value for native and transferFrom for ERC-20,
+    // but the function signature is identical — always call fund(uint256).
+    console.log(`[fundFaucet] STEP 7: Encoding fund(${amount.toString()}) call...`);
     const fundData = faucetContract.interface.encodeFunctionData("fund", [amount]);
     const fundDataWithReferral = appendDivviReferralData(fundData);
+    const txValue = treatAsNative ? amount : 0n;
 
+    console.log(`[fundFaucet] Estimating gas (value=${txValue.toString()})...`);
     const gasParams = await getGasParams();
-    
-    console.log(`[fundFaucet] Estimating gas for fund transaction...`);
-    const fundGasLimit = await provider.estimateGas({
-      to: faucetAddress,
-      data: fundDataWithReferral,
-      value: txValue, // 💡 This correctly attaches the Native CELO/ETH to the smart contract call!
-    });
-    console.log(`[fundFaucet] Gas limit estimated at: ${fundGasLimit.toString()}`);
 
-    console.log(`[fundFaucet] Sending funding transaction to network...`);
+    let fundGasLimit: bigint;
+    try {
+      fundGasLimit = await provider.estimateGas({
+        to: faucetAddress,
+        from: signerAddress,
+        data: fundDataWithReferral,
+        value: txValue,
+      });
+      console.log(`[fundFaucet] Gas estimated: ${fundGasLimit.toString()}`);
+    } catch (estimateErr: any) {
+      // estimateGas failing almost always means the contract will revert.
+      // Decode and surface the reason rather than proceeding blind.
+      console.error(`[fundFaucet] estimateGas failed — contract likely to revert:`, estimateErr);
+      if (estimateErr.data && typeof estimateErr.data === "string") {
+        throw new Error(decodeRevertError(estimateErr.data));
+      }
+      throw new Error(
+        estimateErr.reason ||
+        estimateErr.message ||
+        "Gas estimation failed — the transaction would revert."
+      );
+    }
+
+    console.log(`[fundFaucet] Sending fund transaction...`);
     const fundTx = await signer.sendTransaction({
       to: faucetAddress,
       data: fundDataWithReferral,
-      value: txValue, // 💡 Send the value
-      gasLimit: (fundGasLimit * BigInt(12)) / BigInt(10), // Adding 20% buffer
+      value: txValue,
+      gasLimit: (fundGasLimit * 12n) / 10n, // 20% buffer
       ...gasParams,
     });
 
-    console.log(`[fundFaucet] Fund tx broadcasted! Hash: ${fundTx.hash}. Waiting for confirmation...`);
+    console.log(`[fundFaucet] Broadcasted: ${fundTx.hash}. Waiting for confirmation...`);
     const receipt = await fundTx.wait();
-    if (!receipt) {
-      console.error(`[fundFaucet] ERROR: Fund transaction receipt is null!`);
-      throw new Error("Fund transaction receipt is null");
-    }
-    
-    console.log(`[fundFaucet] Fund tx CONFIRMED in block ${receipt.blockNumber}`);
+    if (!receipt) throw new Error("Fund transaction receipt is null");
 
-    console.log(`[fundFaucet] Reporting fund tx to Divvi...`);
+    console.log(`[fundFaucet] Confirmed in block ${receipt.blockNumber}`);
+
+    console.log(`[fundFaucet] Reporting to Divvi...`);
     await reportTransactionToDivvi(fundTx.hash as `0x${string}`, Number(chainId));
-    console.log(`[fundFaucet] Divvi report complete. Sequence finished successfully.`);
-    
+    console.log(`[fundFaucet] Done.`);
+
     return fundTx.hash;
 
   } catch (error: any) {
-    console.error(`[fundFaucet] ❌ CRITICAL ERROR CAUGHT IN CATCH BLOCK:`, error);
+    console.error(`[fundFaucet] ❌ CRITICAL ERROR:`, error);
 
     if (error.message?.includes("network changed")) {
       throw new Error("Network changed during transaction. Please try again.");
